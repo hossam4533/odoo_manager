@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Odoo Manager — User Guide</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --primary: #714B67; --primary-dark: #4E3247; --primary-soft: #F4EEF3;
+    --teal: #017E84; --ink: #1F2430; --muted: #5F6675; --line: #E4E1E6;
+    --ok: #1E9E5A; --warn: #C77700; --bad: #D64545;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", "Segoe UI Variable", Arial, sans-serif; color: var(--ink);
+         font-size: 10.5pt; line-height: 1.55; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width: 210mm; height: 297mm; padding: 20mm 18mm 18mm; position: relative; overflow: hidden;
+          page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .foot { position: absolute; left: 18mm; right: 18mm; bottom: 9mm; display: flex; justify-content: space-between;
+          font-size: 8pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 3mm; }
+  .foot b { color: var(--primary); }
+
+  /* cover */
+  .cover { padding: 0; color: #fff; background:
+             radial-gradient(1200px 600px at 110% -10%, rgba(1,126,132,.55), transparent 60%),
+             radial-gradient(900px 700px at -20% 110%, rgba(255,255,255,.10), transparent 60%),
+             linear-gradient(160deg, #8A5C7E 0%, #714B67 45%, #3F2839 100%); }
+  .cover .inner { padding: 26mm 20mm 0; }
+  .logo { width: 22mm; height: 22mm; border-radius: 6mm; background: #fff; display: grid; place-items: center;
+          box-shadow: 0 6mm 14mm rgba(0,0,0,.25); }
+  .logo i { width: 12mm; height: 12mm; border: 2.6mm solid var(--primary); border-radius: 50%; position: relative; display: block; }
+  .logo i::after { content: ""; position: absolute; width: 4.2mm; height: 4.2mm; border-radius: 50%;
+                   background: #5FE3A1; right: -3.2mm; bottom: -3.2mm; border: 1mm solid #fff; }
+  .cover h1 { font-size: 40pt; line-height: 1.05; margin: 14mm 0 4mm; letter-spacing: -.5pt; font-weight: 700; }
+  .cover .tag { font-size: 15pt; opacity: .92; max-width: 140mm; font-weight: 300; }
+  .cover .meta { display: flex; gap: 4mm; margin-top: 9mm; flex-wrap: wrap; }
+  .chip { border: 1px solid rgba(255,255,255,.45); border-radius: 20mm; padding: 1.4mm 4mm; font-size: 9pt; }
+  .cover .shot { position: absolute; left: 20mm; right: 20mm; bottom: 22mm; background: transparent; border: 0; box-shadow: none; overflow: visible; }
+  .cover .shot img { width: 100%; border-radius: 4mm; box-shadow: 0 10mm 30mm rgba(0,0,0,.45);
+                     border: 1px solid rgba(255,255,255,.3); }
+  .cover .by { position: absolute; top: 26mm; right: 20mm; text-align: right; font-size: 9pt; opacity: .9; }
+  .cover .by b { font-size: 11pt; display: block; }
+
+  h2 { font-size: 20pt; margin: 0 0 1.5mm; color: var(--primary-dark); letter-spacing: -.2pt; }
+  .kicker { color: var(--teal); font-weight: 700; font-size: 8.5pt; letter-spacing: 1.4pt; text-transform: uppercase; }
+  .lead { font-size: 11.5pt; color: var(--muted); margin: 2mm 0 6mm; max-width: 160mm; }
+  h3 { font-size: 12pt; margin: 6mm 0 2mm; color: var(--ink); }
+  p { margin: 0 0 3mm; }
+  .shot { border-radius: 3mm; border: 1px solid var(--line); box-shadow: 0 2mm 6mm rgba(40,20,40,.10); overflow: hidden; background: #fff; }
+  .shot img { display: block; width: 100%; }
+  .clip { max-height: 92mm; } .clip img { object-fit: cover; object-position: top; height: 92mm; }
+  .clip-s { max-height: 50mm; } .clip-s img { object-fit: cover; object-position: top; height: 50mm; }
+  .cap { font-size: 8.5pt; color: var(--muted); margin: 2mm 0 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5mm; }
+  .card { border: 1px solid var(--line); border-radius: 3mm; padding: 4.5mm 5mm; background: #fff; }
+  .card h4 { margin: 0 0 1.5mm; font-size: 10.5pt; color: var(--primary-dark); }
+  .card p { margin: 0; font-size: 9.5pt; color: var(--muted); }
+  .ic { width: 9mm; height: 9mm; border-radius: 2.5mm; background: var(--primary-soft); color: var(--primary);
+        display: grid; place-items: center; font-weight: 700; font-size: 11pt; margin-bottom: 3mm; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 2mm 0 4mm; }
+  th { text-align: left; background: var(--primary-soft); color: var(--primary-dark); font-weight: 600; padding: 2.4mm 3mm; }
+  td { padding: 2.4mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 2mm 0 4mm; }
+  ol.steps li { counter-increment: s; position: relative; padding: 0 0 3mm 11mm; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 0; top: -.3mm; width: 7mm; height: 7mm; border-radius: 50%;
+        background: var(--primary); color: #fff; font-weight: 700; font-size: 9pt; display: grid; place-items: center; }
+  .note { border-left: 1.2mm solid var(--teal); background: #EEF7F7; padding: 3mm 4.5mm; border-radius: 0 2mm 2mm 0; font-size: 9.5pt; margin: 3mm 0; }
+  .warn { border-left-color: var(--warn); background: #FFF6E8; }
+  code, .mono { font-family: "Cascadia Code", Consolas, monospace; font-size: 8.8pt; background: #F3F1F4; padding: .3mm 1.4mm; border-radius: 1mm; }
+  .kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 1.2mm; padding: 0 1.6mm; font-size: 8.8pt; background: #fff; }
+  .toc { columns: 2; column-gap: 10mm; margin-top: 4mm; }
+  .toc div { display: flex; justify-content: space-between; border-bottom: 1px dotted #CFC9D1; padding: 2mm 0; break-inside: avoid; }
+  .toc b { color: var(--primary); margin-right: 3mm; }
+  .stat { text-align: center; padding: 5mm 3mm; }
+  .stat b { display: block; font-size: 20pt; color: var(--primary); line-height: 1.1; }
+  .stat span { font-size: 8.5pt; color: var(--muted); }
+  .flow { display: flex; align-items: stretch; gap: 2mm; margin: 4mm 0 5mm; }
+  .flow div { flex: 1; background: var(--primary-soft); border-radius: 2.5mm; padding: 3mm; font-size: 8.8pt; text-align: center; position: relative; }
+  .flow div b { display: block; color: var(--primary-dark); font-size: 9.5pt; margin-bottom: .8mm; }
+  .flow div:not(:last-child)::after { content: "›"; position: absolute; right: -2.4mm; top: 50%; transform: translateY(-50%);
+        color: var(--primary); font-weight: 700; font-size: 14pt; }
+  .pill { display: inline-block; padding: .2mm 2.4mm; border-radius: 10mm; font-size: 8pt; font-weight: 600; }
+  .pill.ok { background: #E3F6EC; color: var(--ok); } .pill.bad { background: #FCEAEA; color: var(--bad); }
+  .back { background: linear-gradient(160deg, #714B67, #3F2839); color: #fff; }
+  .back .foot { color: rgba(255,255,255,.7); border-color: rgba(255,255,255,.25); }
+  .back .foot b { color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- 1. COVER -->
+<section class="page cover">
+  <div class="inner">
+    <div class="logo"><i></i></div>
+    <div class="by">Powered by<b>Hossam Ramadan</b></div>
+    <h1>Odoo Manager</h1>
+    <div class="tag">One desktop app to run, monitor, back up and extend every Odoo server on your Windows PC.</div>
+    <div class="meta">
+      <span class="chip">User Guide</span><span class="chip">Version 1.1.0</span>
+      <span class="chip">Windows 10 / 11</span><span class="chip">English · العربية</span>
+    </div>
+  </div>
+  <div class="shot"><img src="img/main_dark_tab0.png"></div>
+</section>
+
+<!-- 2. CONTENTS + AT A GLANCE -->
+<section class="page">
+  <div class="kicker">Overview</div>
+  <h2>Why Odoo Manager</h2>
+  <p class="lead">Developers and implementers on Windows juggle Odoo from the command line: editing
+    <code>odoo.conf</code> by hand, hunting for logs, taking backups from the database page and fighting
+    port clashes between versions. Odoo Manager puts all of that in one window.</p>
+
+  <div class="grid3">
+    <div class="card"><div class="ic">▶</div><h4>Control every server</h4><p>Windows services and odoo-bin instances side by side: start, stop, restart, open in the browser.</p></div>
+    <div class="card"><div class="ic">≡</div><h4>Live logs &amp; config</h4><p>Colour-coded live log with filtering, and an <code>odoo.conf</code> editor that saves with admin rights when needed.</p></div>
+    <div class="card"><div class="ic">⛁</div><h4>Databases</h4><p>Backup, restore and delete in Odoo’s own zip format, plus a daily automatic backup.</p></div>
+    <div class="card"><div class="ic">+</div><h4>Modules</h4><p>Drop in a module folder or zip, then install or upgrade it without touching the terminal.</p></div>
+    <div class="card"><div class="ic">★</div><h4>New server wizard</h4><p>Checks Git, Python and PostgreSQL, installs what is missing, then downloads Odoo and builds the environment.</p></div>
+    <div class="card"><div class="ic">◐</div><h4>Made for daily use</h4><p>Arabic and English, light and dark themes, system-tray icon, start with Windows, stop alerts.</p></div>
+  </div>
+
+  <h3 style="margin-top:9mm">Contents</h3>
+  <div class="toc">
+    <div><span><b>1</b>Installation</span><span>3</span></div>
+    <div><span><b>2</b>First launch</span><span>4</span></div>
+    <div><span><b>3</b>The main window</span><span>5</span></div>
+    <div><span><b>4</b>Logs &amp; configuration</span><span>6</span></div>
+    <div><span><b>5</b>Databases</span><span>7</span></div>
+    <div><span><b>6</b>Custom modules</span><span>8</span></div>
+    <div><span><b>7</b>New server wizard</span><span>9</span></div>
+    <div><span><b>8</b>Settings &amp; automation</span><span>10</span></div>
+    <div><span><b>9</b>Troubleshooting &amp; FAQ</span><span>11</span></div>
+    <div><span><b>10</b>Quick reference</span><span>12</span></div>
+  </div>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 2</span></div>
+</section>
+
+<!-- 3. INSTALLATION -->
+<section class="page">
+  <div class="kicker">Chapter 1</div>
+  <h2>Installation</h2>
+  <p class="lead">A single 54&nbsp;MB installer. The app itself needs nothing else to run — no Python, no extra runtimes.</p>
+  <table>
+    <tr><th>Requirement</th><th>Details</th></tr>
+    <tr><td>Operating system</td><td>Windows 10 or Windows 11, 64-bit</td></tr>
+    <tr><td>Installer</td><td><code>OdooManager-Setup-1.1.0.exe</code> (≈ 54 MB)</td></tr>
+    <tr><td>Disk space</td><td>≈ 60 MB for the app; Odoo servers you create need ≈ 2 GB each</td></tr>
+    <tr><td>To create new servers</td><td>Git, Python 3.10 – 3.13 and PostgreSQL — the wizard checks and installs them for you</td></tr>
+  </table>
+  <h3>Install in four steps</h3>
+  <ol class="steps">
+    <li>Run <code>OdooManager-Setup-1.1.0.exe</code>.</li>
+    <li>If Windows SmartScreen shows a blue “Windows protected your PC” message, click <b>More info</b> → <b>Run anyway</b>.</li>
+    <li>Choose the setup language, tick <b>Create a desktop shortcut</b> if you want one, and click <b>Install</b>.</li>
+    <li>Leave <b>Launch Odoo Manager</b> ticked and click <b>Finish</b>.</li>
+  </ol>
+  <div class="note warn"><b>Why the SmartScreen message?</b> The installer is not code-signed yet, so Windows does not
+    recognise the publisher. The app is installed per-user or under <code>Program Files\OdooManager</code> and can be removed at any time.</div>
+  <h3>Uninstalling</h3>
+  <p>Windows Settings → Apps → <b>Odoo Manager</b> → Uninstall. Your Odoo servers and databases are never touched;
+    the server list and settings stay in <code>%APPDATA%\OdooManager</code> in case you reinstall.</p>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 3</span></div>
+</section>
+
+<!-- 4. FIRST LAUNCH -->
+<section class="page">
+  <div class="kicker">Chapter 2</div>
+  <h2>First launch</h2>
+  <p class="lead">A three-page welcome tour opens the first time. Meanwhile the app detects Odoo services already
+    installed on the PC and locates PostgreSQL automatically.</p>
+  <div class="grid3">
+    <div><div class="shot"><img src="img/welcome1.png"></div><p class="cap">1 · What the app does</p></div>
+    <div><div class="shot"><img src="img/welcome2.png"></div><p class="cap">2 · Add your first server</p></div>
+    <div><div class="shot"><img src="img/welcome3.png"></div><p class="cap">3 · Everyday use</p></div>
+  </div>
+  <h3>Add your first server</h3>
+  <table>
+    <tr><th>You have…</th><th>What to do</th></tr>
+    <tr><td>Odoo installed with the official .exe</td><td>Nothing — it appears in the list automatically. Installed it later? Use <b>⋯ → Detect Windows services</b>.</td></tr>
+    <tr><td>Nothing yet</td><td>Click <b>New server</b> and follow the wizard (Chapter 7).</td></tr>
+    <tr><td>An odoo-bin server already set up</td><td><b>⋯ → Add existing server</b>, then point to Python, <code>odoo-bin</code> and <code>odoo.conf</code>.</td></tr>
+  </table>
+  <div class="note">The tour can be reopened any time from <b>ⓘ About → Getting started guide</b>. Only one copy of the app runs at a time — launching it again brings the open window to the front.</div>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 4</span></div>
+</section>
+
+<!-- 5. MAIN WINDOW -->
+<section class="page">
+  <div class="kicker">Chapter 3</div>
+  <h2>The main window</h2>
+  <p class="lead">Servers on the side, the selected server in the middle. Status, port, PID, memory and uptime refresh every few seconds.</p>
+  <div class="shot"><img src="img/main_tab0.png"></div>
+  <p class="cap">Overview tab of a running Odoo 19 Windows service.</p>
+  <table>
+    <tr><th>Control</th><th>What it does</th></tr>
+    <tr><td>Start · Stop · Restart</td><td>Controls the server. Windows services ask for admin rights (UAC). Before starting an odoo-bin server the app checks the port and names the program using it.</td></tr>
+    <tr><td>Open in browser</td><td>Opens <code>http://localhost:&lt;port&gt;</code>. Double-clicking a server in the list does the same.</td></tr>
+    <tr><td>⋯ menu</td><td>Edit, open folder, add / upgrade module, open custom addons folder, copy master password, remove.</td></tr>
+    <tr><td>Check ports</td><td>Lists every server’s port and flags conflicts between them or with other programs.</td></tr>
+    <tr><td>Header</td><td>Language switch, light / dark theme, settings and About.</td></tr>
+  </table>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 5</span></div>
+</section>
+
+<!-- 6. LOGS + CONFIG -->
+<section class="page">
+  <div class="kicker">Chapter 4</div>
+  <h2>Logs &amp; configuration</h2>
+  <p class="lead">Follow what Odoo is doing as it happens, and change its configuration without opening a text editor.</p>
+  <div class="shot clip"><img src="img/main_tab1.png"></div>
+  <p class="cap">Logs tab — colour-coded by level, with auto-scroll and a filter box (for example <code>ERROR</code>).</p>
+  <div class="shot clip" style="margin-top:5mm"><img src="img/main_tab2.png"></div>
+  <p class="cap">Configuration tab — edit <code>odoo.conf</code> directly. Saving offers to restart the server so the change takes effect.</p>
+  <div class="note">Config files under <code>Program Files</code> are protected by Windows. Odoo Manager saves them through a UAC prompt, so you never need to “Run as administrator”.</div>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 6</span></div>
+</section>
+
+<!-- 7. DATABASES -->
+<section class="page">
+  <div class="kicker">Chapter 5</div>
+  <h2>Databases</h2>
+  <p class="lead">Backup, restore and delete work directly on PostgreSQL — no master password needed — and use Odoo’s own zip format, so backups move freely between Odoo Manager and Odoo’s database page.</p>
+  <div class="shot clip"><img src="img/db_with_data.png"></div>
+  <p class="cap">Databases tab — each database has its own Delete button.</p>
+  <table>
+    <tr><th>Action</th><th>How</th><th>Good to know</th></tr>
+    <tr><td>Backup</td><td>Select a database → Backup</td><td>Zip with <code>dump.sql</code> + filestore, saved to the backups folder</td></tr>
+    <tr><td>Restore</td><td>Restore → pick a file → new name</td><td>Accepts .zip, .dump, .backup and .sql; refuses a name that already exists</td></tr>
+    <tr><td>Delete</td><td>Delete next to the database → type its name</td><td>Permanent; works even while the server is running</td></tr>
+    <tr><td>Open</td><td>Double-click the database</td><td>Opens it in the browser</td></tr>
+    <tr><td>Daily backup</td><td>Settings → Automation</td><td>Every database on a running server, once a day, keeping the last N copies (7 by default)</td></tr>
+  </table>
+  <div class="note warn">A backup from an older Odoo version restores fine, but a newer server will not open it until it is upgraded through Odoo’s official upgrade service.</div>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 7</span></div>
+</section>
+
+<!-- 8. MODULES -->
+<section class="page">
+  <div class="kicker">Chapter 6</div>
+  <h2>Custom modules</h2>
+  <p class="lead">Add a module in two clicks. Odoo Manager copies it into the server’s custom addons folder and restarts the server; you then install it from Odoo’s Apps menu.</p>
+  <div class="flow">
+    <div><b>⋯ → Add module</b>Pick a folder or a .zip</div>
+    <div><b>Copied</b>into the custom addons folder</div>
+    <div><b>Restarted</b>automatically</div>
+    <div><b>Apps</b>Update Apps List</div>
+    <div><b>Install</b>the module</div>
+  </div>
+  <h3>The custom addons folder</h3>
+  <p>The app uses the folder in <code>addons_path</code> whose name contains <i>custom</i> (or the last non-core folder).
+    If the server has none — typical for the official .exe — it offers to create one and adds it to <code>addons_path</code> for you:</p>
+  <table>
+    <tr><th>Server type</th><th>Suggested folder</th></tr>
+    <tr><td>Created by the wizard</td><td><code>&lt;server folder&gt;\custom_addons</code> (already configured)</td></tr>
+    <tr><td>Official .exe (Program Files)</td><td><code>%USERPROFILE%\Odoo\custom_addons</code></td></tr>
+    <tr><td>Any other</td><td><code>custom_addons</code> next to <code>odoo.conf</code>, or a folder you choose</td></tr>
+  </table>
+  <h3>Upgrading a module</h3>
+  <p><b>⋯ → Upgrade module</b>, choose the database, type the module name(s). The app runs Odoo’s upgrade in the background,
+    shows any errors from the log, and restarts the server.</p>
+  <div class="note">Modules must target the same Odoo version (the <code>version</code> in <code>__manifest__.py</code> starts with <code>19.0</code> for Odoo 19), and every module listed in <code>depends</code> must be available.</div>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 8</span></div>
+</section>
+
+<!-- 9. WIZARD -->
+<section class="page">
+  <div class="kicker">Chapter 7</div>
+  <h2>New server wizard</h2>
+  <p class="lead">From nothing to a running Odoo server — the wizard checks requirements, downloads Odoo from GitHub, builds a virtual environment and writes <code>odoo.conf</code>. A fresh Odoo 19 server took about 3 minutes in testing.</p>
+  <div class="grid2" style="grid-template-columns: 1.05fr 1fr; align-items:start">
+    <div><div class="shot"><img src="img/wizard.png"></div><p class="cap">The requirements panel: missing items get an <b>Install</b> button.</p></div>
+    <div>
+      <h3 style="margin-top:0">Requirements check</h3>
+      <table>
+        <tr><th>Item</th><th>Install button</th></tr>
+        <tr><td>Git</td><td>Installs Git silently</td></tr>
+        <tr><td>Python 3.10 – 3.13</td><td>Installs Python 3.12</td></tr>
+        <tr><td>PostgreSQL</td><td>Installs PostgreSQL 16, asks for a password and creates an <code>odoo</code> user</td></tr>
+      </table>
+      <p style="font-size:9.5pt;color:var(--muted)">Installs use Microsoft’s <b>winget</b>; each row also links to the official download page. Setup will not start until the essentials are in place.</p>
+      <h3>Then</h3>
+      <ol class="steps">
+        <li>Name the server, choose the version, the edition and a folder.</li>
+        <li>Confirm Python and the HTTP port (a free one is suggested).</li>
+        <li>Enter the PostgreSQL user and password.</li>
+        <li>Click <b>Start setup</b> and watch the progress log.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="note"><b>Community or Enterprise.</b> Enterprise needs a subscription or partner access to <code>github.com/odoo/enterprise</code>. Give the repository URL or an existing folder; the wizard puts it first in <code>addons_path</code>. The master password is generated and saved in <code>odoo.conf</code> (<code>admin_passwd</code>).</div>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 9</span></div>
+</section>
+
+<!-- 10. SETTINGS -->
+<section class="page">
+  <div class="kicker">Chapter 8</div>
+  <h2>Settings &amp; automation</h2>
+  <p class="lead">Set it once and let it run. Closing the window keeps Odoo Manager in the system tray, where every server can be started, stopped or opened from a right-click menu.</p>
+  <div class="grid2" style="align-items:start">
+    <div><div class="shot"><img src="img/settings.png"></div><p class="cap">Settings dialog.</p></div>
+    <div>
+      <table>
+        <tr><th>Setting</th><th>Effect</th></tr>
+        <tr><td>PostgreSQL bin</td><td>Tools used for backup and restore (found automatically)</td></tr>
+        <tr><td>Backup folder</td><td>Where backups are saved</td></tr>
+        <tr><td>Keep in tray</td><td>Closing the window hides it next to the clock</td></tr>
+        <tr><td>Launch with Windows</td><td>Starts minimised to the tray at sign-in</td></tr>
+        <tr><td>Daily backup</td><td>Automatic backup of all databases</td></tr>
+        <tr><td>Copies to keep</td><td>Older automatic backups are deleted</td></tr>
+        <tr><td>Stop alerts</td><td>Notification when a server stops unexpectedly</td></tr>
+        <tr><td>Language · Theme</td><td>العربية / English · Light / Dark</td></tr>
+      </table>
+      <div class="note">Each odoo-bin server can also start automatically when the app opens (Overview tab).</div>
+    </div>
+  </div>
+  <h3>Light and dark</h3>
+  <div class="shot clip-s"><img src="img/main_dark_tab0.png"></div>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 10</span></div>
+</section>
+
+<!-- 11. TROUBLESHOOTING -->
+<section class="page">
+  <div class="kicker">Chapter 9</div>
+  <h2>Troubleshooting &amp; FAQ</h2>
+  <p class="lead">The problems people actually hit, and the fix for each.</p>
+  <table>
+    <tr><th>Symptom</th><th>Cause and fix</th></tr>
+    <tr><td>“Access Denied” creating a database</td><td>Wrong master password. Use <b>⋯ → Copy master password</b>, or set a new <code>admin_passwd</code> in the Configuration tab and restart.</td></tr>
+    <tr><td>Master password looks like <code>$pbkdf2…</code></td><td>Odoo hashed it; it cannot be recovered. Set a new one in the Configuration tab.</td></tr>
+    <tr><td>“no password supplied” (port 5432)</td><td><code>db_user</code> / <code>db_password</code> in <code>odoo.conf</code> do not match a PostgreSQL user. Correct them and restart.</td></tr>
+    <tr><td>Server starts then stops</td><td>Open the Logs tab. A common cause is a Python that was removed with an old Odoo install — recreate the server with the wizard.</td></tr>
+    <tr><td>“Port … already in use”</td><td>Another server or program holds the port. Use <b>Check ports</b>, then change <code>http_port</code>.</td></tr>
+    <tr><td>Internal Server Error with several versions</td><td>Each Odoo version sees the other versions’ databases. Add a <code>dbfilter</code> to each server’s config.</td></tr>
+    <tr><td>Restored database won’t open</td><td>It comes from an older Odoo version, or its custom modules are missing — add them with <b>Add module</b>.</td></tr>
+    <tr><td>Can’t log in to a restored backup</td><td>Backups from Odoo Online / Odoo.sh often have no local password. Reset the user’s password in the database.</td></tr>
+    <tr><td>PostgreSQL shows ✕ in the wizard</td><td>PostgreSQL is not running — uninstalling an old Odoo may remove it. Click <b>Install</b> or start its service.</td></tr>
+  </table>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 11</span></div>
+</section>
+
+<!-- 12. QUICK REFERENCE / BACK -->
+<section class="page back">
+  <div class="kicker" style="color:#9FE3E6">Chapter 10</div>
+  <h2 style="color:#fff">Quick reference</h2>
+  <p class="lead" style="color:rgba(255,255,255,.85)">Where everything lives.</p>
+  <table style="background:rgba(255,255,255,.06);border-radius:3mm;overflow:hidden">
+    <tr><th style="background:rgba(255,255,255,.14);color:#fff">I want to…</th><th style="background:rgba(255,255,255,.14);color:#fff">Go to</th></tr>
+    <tr><td style="border-color:rgba(255,255,255,.15)">Start, stop, restart</td><td style="border-color:rgba(255,255,255,.15)">Buttons above the tabs, or the tray icon</td></tr>
+    <tr><td style="border-color:rgba(255,255,255,.15)">See errors</td><td style="border-color:rgba(255,255,255,.15)">Logs tab → filter <code style="background:rgba(255,255,255,.15);color:#fff">ERROR</code></td></tr>
+    <tr><td style="border-color:rgba(255,255,255,.15)">Change odoo.conf</td><td style="border-color:rgba(255,255,255,.15)">Configuration tab → Save → Restart</td></tr>
+    <tr><td style="border-color:rgba(255,255,255,.15)">Back up / restore / delete</td><td style="border-color:rgba(255,255,255,.15)">Databases tab</td></tr>
+    <tr><td style="border-color:rgba(255,255,255,.15)">Add or upgrade a module</td><td style="border-color:rgba(255,255,255,.15)">⋯ → Add module / Upgrade module</td></tr>
+    <tr><td style="border-color:rgba(255,255,255,.15)">Get the master password</td><td style="border-color:rgba(255,255,255,.15)">⋯ → Copy master password</td></tr>
+    <tr><td style="border-color:rgba(255,255,255,.15)">Create a new server</td><td style="border-color:rgba(255,255,255,.15)">New server</td></tr>
+    <tr><td style="border-color:rgba(255,255,255,.15)">Automatic backups, alerts</td><td style="border-color:rgba(255,255,255,.15)">⚙ Settings → Automation</td></tr>
+    <tr><td style="border-color:rgba(255,255,255,.15)">Welcome tour, version</td><td style="border-color:rgba(255,255,255,.15)">ⓘ About</td></tr>
+  </table>
+  <div style="display:flex;align-items:center;gap:6mm;margin-top:16mm">
+    <div class="logo" style="width:18mm;height:18mm"><i style="width:9.5mm;height:9.5mm;border-width:2.1mm"></i></div>
+    <div><div style="font-size:18pt;font-weight:700">Odoo Manager 1.1.0</div>
+      <div style="opacity:.85">Powered by <b>Hossam Ramadan</b></div></div>
+  </div>
+  <p style="margin-top:8mm;font-size:8.5pt;opacity:.7">Odoo is a trademark of Odoo S.A. Odoo Manager is an independent tool and is not affiliated with or endorsed by Odoo S.A.</p>
+  <div class="foot"><span>Odoo Manager · User Guide</span><span>Powered by <b>Hossam Ramadan</b> · 12</span></div>
+</section>
+
+</body>
+</html>

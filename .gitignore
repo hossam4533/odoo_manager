@@ -1,0 +1,9 @@
+*.spec
+.venv/
+__pycache__/
+build/
+dist/
+docs/LinkedIn-post*.txt
+docs/preview*.png
+keys/
+p.out
