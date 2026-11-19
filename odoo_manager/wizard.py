@@ -205,23 +205,24 @@ class SetupWorker(QThread):
 class PgUserDialog(QDialog):
     """Database user for Odoo: name + password (+ superuser password when PostgreSQL already exists)."""
 
-    def __init__(self, parent, install: bool, servers: list):
+    def __init__(self, parent, install: bool, servers: list, user: str = "odoo", pw: str = "",
+                 head: str | None = None):
         super().__init__(parent)
         self.setWindowTitle("PostgreSQL")
         self.setMinimumWidth(460)
         v = QVBoxLayout(self)
         v.setContentsMargins(22, 20, 22, 18)
         v.setSpacing(10)
-        head = QLabel(tr("pgu_head_install") if install else tr("pgu_head_setup"))
+        head = QLabel(head or (tr("pgu_head_install") if install else tr("pgu_head_setup")))
         head.setWordWrap(True)
         v.addWidget(head)
         f = QFormLayout()
         f.setSpacing(8)
-        self.user = QLineEdit("odoo")
+        self.user = QLineEdit(user)
         self.user.setLayoutDirection(Qt.LeftToRight)
-        self.pw = QLineEdit()
+        self.pw = QLineEdit(pw)
         self.pw.setEchoMode(QLineEdit.Password)
-        self.pw2 = QLineEdit()
+        self.pw2 = QLineEdit(pw)
         self.pw2.setEchoMode(QLineEdit.Password)
         self.su = QLineEdit()
         self.su.setEchoMode(QLineEdit.Password)
@@ -679,6 +680,60 @@ class NewServerWizard(QDialog):
         self.req_worker.start()
         self.check_reqs()
 
+    def _check_folder(self) -> bool:
+        base = self.base.text().strip()
+        if not core.is_bad_server_folder(base):
+            return True
+        drive = (Path(base).drive or "C:") + "\\"
+        sug = str(Path(drive) / "Odoo" / (self.name.text().strip() or "odoo"))
+        m = QMessageBox(self)
+        m.setWindowTitle(tr("wiz_title"))
+        m.setIcon(QMessageBox.Warning)
+        m.setText(tr("folder_warn", p=base, s=sug))
+        use = m.addButton(tr("folder_use_sug"), QMessageBox.AcceptRole)
+        keep = m.addButton(tr("folder_keep"), QMessageBox.DestructiveRole)
+        m.addButton(tr("cancel"), QMessageBox.RejectRole)
+        m.exec()
+        if m.clickedButton() is use:
+            self.base.setText(sug)
+            return True
+        return m.clickedButton() is keep
+
+    def _check_db_user(self) -> bool:
+        """Make sure Odoo will be able to log in to PostgreSQL with the user typed in the wizard."""
+        host, port = self.db_host.text().strip(), self.db_port.text().strip()
+        user, pw = self.db_user.text().strip(), self.db_pass.text()
+        res = core.check_db_login(host, port, user, pw)
+        if res == "ok":
+            return True
+        if res == "down":
+            return QMessageBox.question(self, "PostgreSQL", tr("req_pg_continue")) == QMessageBox.Yes
+        if res != "auth":
+            QMessageBox.warning(self, tr("err"), res.replace("error: ", "", 1))
+            return False
+        if host not in ("", "localhost", "127.0.0.1", "::1"):
+            QMessageBox.warning(self, tr("err"), tr("dbu_remote", u=user, h=host))
+            return False
+        d = PgUserDialog(self, False, [], user=user or "odoo", pw=pw, head=tr("dbu_missing", u=user))
+        if not d.exec():
+            return False
+        su, u, p, _apply = d.values()
+        try:
+            pg_bin = core.find_pg_bin()
+            if not pg_bin:
+                raise RuntimeError(tr("no_pgdump", p="PostgreSQL"))
+            core.setup_postgres_user(pg_bin, su, u, p, self.out.appendPlainText, port=int(port or 5432))
+        except Exception as e:
+            QMessageBox.warning(self, tr("err"), tr("dbu_failed", e=e))
+            return False
+        self.db_user.setText(u)
+        self.db_pass.setText(p)
+        if core.check_db_login(host, port, u, p) != "ok":
+            QMessageBox.warning(self, tr("err"), tr("dbu_failed", e="login check"))
+            return False
+        self.out.appendPlainText("✓ " + tr("pg_user_made", u=u))
+        return True
+
     def _existing_servers(self):
         reg = getattr(self.parent(), "reg", None)
         return [i for i in (reg.instances if reg else []) if i.conf_path and os.path.exists(i.conf_path)]
@@ -735,6 +790,10 @@ class NewServerWizard(QDialog):
             return
         if self.db_user.text().strip().lower() == "postgres":
             return QMessageBox.warning(self, tr("err"), tr("no_postgres_user"))
+        if not self._check_folder():
+            return
+        if "postgres" not in missing and not self._check_db_user():
+            return
         cfg = dict(name=self.name.text().strip(), branch=self.branch.currentText().strip(),
                    base=self.base.text().strip(), clone=self.clone.isChecked(), src=self.src.text().strip(),
                    python=self.python.currentText().strip(), venv=self.venv.isChecked(),

@@ -1,4 +1,4 @@
-"""Core logic: instance registry, process/service control, ports, conf files."""
+﻿"""Core logic: instance registry, process/service control, ports, conf files."""
 from __future__ import annotations
 
 import configparser
@@ -21,7 +21,7 @@ import psutil
 from .i18n import tr
 
 APP_NAME = "OdooManager"
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.1.1"
 APP_AUTHOR = "Hossam Ramadan"
 APP_DIR = Path(os.environ.get("APPDATA", str(Path.home()))) / APP_NAME
 LOG_DIR = APP_DIR / "logs"
@@ -711,7 +711,7 @@ def _install_watcher(what: str, progress, stop):
 
 
 def _verify_installed(what: str) -> bool:
-    """Look for the real thing on disk — winget's own records can be stale."""
+    """Look for the real thing on disk â€” winget's own records can be stale."""
     if what == "git":
         return bool(find_git())
     if what == "python":
@@ -739,7 +739,7 @@ def winget_install(what: str, log=print, override: str | None = None, progress=N
 
 
 def _winget_run(what: str, log=print, override: str | None = None, progress=None, force: bool = False) -> int:
-    """progress(pct, phase) — download 0..50 %, install 50..99 % (file count), 100 when done."""
+    """progress(pct, phase) â€” download 0..50 %, install 50..99 % (file count), 100 when done."""
     import threading
     cmd = ["winget", "install", "--id", WINGET_IDS[what], "-e", "--silent",
            "--accept-package-agreements", "--accept-source-agreements"] + (["--force"] if force else [])
@@ -771,7 +771,7 @@ def _winget_run(what: str, log=print, override: str | None = None, progress=None
             tot = float(m.group(3)) * unit[m.group(4)] or 1
             progress(min(50, int(got * 50 / tot)), tr("phase_download"))
             continue
-        if set(line) <= set("-\\|/ █▒"):
+        if set(line) <= set("-\\|/ â–ˆâ–’"):
             continue
         log(line)
         if progress and watcher is None and ("Starting package install" in line or "installer hash" in line):
@@ -923,3 +923,33 @@ def set_conf_values(path: str, values: dict) -> None:
 
 
 VALID_ROLE = re.compile(r"^[a-z_][a-z0-9_]{0,62}$")
+
+
+def check_db_login(host: str, port: str, user: str, pw: str) -> str:
+    """'ok' | 'auth' (user missing or wrong password) | 'down' (server not reachable) | 'error: â€¦'"""
+    import psycopg2
+    try:
+        con = psycopg2.connect(host=host or "localhost", port=int(port or 5432), user=user, password=pw,
+                               dbname="postgres", connect_timeout=4)
+        con.close()
+        return "ok"
+    except psycopg2.OperationalError as e:
+        msg = str(e).lower()
+        if "password authentication failed" in msg or "does not exist" in msg or "no password supplied" in msg:
+            return "auth"
+        if "could not connect" in msg or "connection refused" in msg or "timeout" in msg or "timed out" in msg:
+            return "down"
+        return "error: " + str(e).strip()
+    except Exception as e:
+        return "error: " + str(e).strip()
+
+
+def is_bad_server_folder(path: str) -> bool:
+    """A drive root (for example D:) or a non-empty folder that is not an earlier server of ours."""
+    p = Path(path)
+    if len(p.parts) <= 1 or str(p).rstrip("\\/").endswith(":"):
+        return True
+    if p.is_dir() and any(p.iterdir()):
+        mine = (p / "odoo.conf").exists() or (p / "src" / "odoo-bin").exists()
+        return not mine
+    return False
